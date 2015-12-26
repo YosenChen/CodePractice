@@ -1,0 +1,133 @@
+class Solution {
+public:
+    struct srchEle
+    {
+        int pos; // or pPos, here idx is enough
+        int val; // or pVal, used for comparison
+        
+        // qsort only can sort const-sized elements
+        // so if your data (both pos and val) is not const-sized, you can sort ptrs to val or pos
+        // to construct an array of search elements, it takes O(N) time, still < search time O(NlogN)
+        
+        // EX1: to sort huge objects, 
+        // use pPos = &Obj, and val can be copied from Obj.someAttr,
+        // or maybe val can be omitted, we just use pPos->someAttr to compare.
+        
+        // EX2: to sort vector<string>, 
+        // use string* pStr; // ptr to the string in vector
+        // and int idx; // in the vector
+    };
+    
+    static int compare(const void *a, const void *b)
+    {
+        return (((srchEle*)a)->val - ((srchEle*)b)->val); //min->max
+    }
+    
+    // if found, return idx, otherwise, return -1
+    int iterBinarySearch(srchEle* pData, int size, int val)
+    {
+        int idx1=0, idx2=size-1, mid;
+        
+        if (val<pData[idx1].val || val>pData[idx2].val) return -1; //check boundaries 
+        
+        while (1)
+        {
+            if (pData[idx1].val == val) return pData[idx1].pos;
+            if (pData[idx2].val == val) return pData[idx2].pos;
+            
+            if (idx1 == idx2) return -1;
+            if (idx2 == idx1+1) return -1;
+            
+            // can further break down, and guarantee idx1<mid<idx2
+            mid = (idx1+idx2)/2;
+            if (pData[idx1].val<val && val<=pData[mid].val)
+            {
+                idx1++; // this action could just cross the target val if val is not in pData
+                idx2 = mid;
+                continue;
+            }
+            else if (pData[mid].val<val && val<pData[idx2].val)
+            {
+                idx1 = mid;
+                idx2--; // this action could just cross the target val if val is not in pData
+                continue;
+            }
+            else // if we don't check this part, it could never end this while loop!!!
+            {
+                // out of range, either val < pData[idx1].val or pData[idx2].val < val
+                // which means val is not in pData
+                return -1;
+            }
+            
+        }
+        
+        return -1;
+    }
+    
+    vector<int> twoSum(vector<int>& nums, int target) {
+        
+        vector<int> res;
+        srchEle *pData = new srchEle[nums.size()], *pTmp = pData;
+        // REMEMBER to add new/delete together
+        for (int i=0; i<nums.size(); i++) // takes O(N)
+        {
+            pTmp->pos = i;
+            pTmp->val = nums[i];
+            pTmp++;
+        }
+        qsort(pData, nums.size(), sizeof(srchEle), compare); //Base, Num, Size, Compare
+        // takes O(NlogN)
+        
+        // In the question statement: You may assume that each input would have exactly one solution.
+        // so, there's no need to cut the outer for loop to half 
+        // (only save time for miss cases, but no help for hit cases)
+        //     (try to use the fact that, the sum of 2 numbers = target, 
+        //      then at least 1 number is less than or equal to target/2
+        //      therefore, it's enough to only go over the region which is less than or equal to target/2)
+        // So, again, DO ASK QUESTIONS BEFORE STARTING CODING!!
+        for (int i=0; i<nums.size(); i++)
+        {
+            int idx = iterBinarySearch(pData, nums.size(), target-nums[i]); // takes O(logN)
+            
+            if ((idx<0) || (idx == i)) continue; // index1 must be less than index2
+            
+            {
+                // pair found, return results
+                // we all work on 0-based indices, convert to 1-based only when return results
+                // here we can guarantee i<idx -> actually, in this case, NO guarantee!!!!
+                // consider the case that two numbers (idx: g < k) are the same, target/2
+                // so when we binary search with g, we would probably get g, so continue
+                // when we binary search with k, we will get g again, so ok!
+                res.push_back(min(i, idx)+1); //small
+                res.push_back(max(idx, i)+1); //large
+                delete [] pData;
+                return res;
+            }
+        }
+        
+        delete [] pData;
+        return res;
+        
+    }
+};
+
+
+/*
+Submission Details
+Status: Time Limit Exceeded
+Submitted: 0 minutes ago
+Last executed input:
+[230,863,916,585,981,404,316,785,88,12,70,435,384,778,887,755,740,337,86,92,325,422,815,650,920,125,277,336, ...
+542
+--> this could mean BUGS!!!!!!!!!!
+*/
+
+
+/*
+Submission Details
+16 / 16 test cases passed.
+Status: Accepted
+Runtime: 12 ms
+Submitted: 0 minutes ago
+Your runtime beats 85.74% of cpp submissions.
+*/

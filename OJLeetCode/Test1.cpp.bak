@@ -1,0 +1,15 @@
+#include <cstdio>
+#include <iostream>
+
+using namespace std;
+
+int main(void)
+{
+	int a = 0, b = 0;
+	printf("a = ");
+	while (a++ < 10) printf("%d, ", a);
+	printf("\nb = ");
+	while (++b < 10) printf("%d, ", a);
+	system("pause");
+	return 0;
+}

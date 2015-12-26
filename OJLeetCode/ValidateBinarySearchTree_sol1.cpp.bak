@@ -1,0 +1,62 @@
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool isValidBST(TreeNode* root, long long int upB=LONG_MAX, long long int lowB=LONG_MIN) {
+        if (!root) return true;
+        
+        bool res = true;
+        if (root->right) res = (root->val < root->right->val) && (root->right->val < upB);
+        if (root->left) res = res && (root->val > root->left->val) && (root->left->val > lowB);
+        
+        return res && isValidBST(root->right, upB, root->val) && isValidBST(root->left, root->val, lowB); //here I can made it one line due to the first line
+    }
+};
+
+
+/*
+Submission Details
+74 / 74 test cases passed.
+Status: Accepted
+Runtime: 12 ms
+Submitted: 0 minutes ago
+Your runtime beats 68.11% of cpp submissions.
+*/
+
+/*
+solution note:
+1. W-shape check:
+   for each node we check: node < right < upper bound
+                           node > left > lower bound
+2. why use long long int, LONG_MAX, and LONG_MIN for upper/lower bound?
+   because the test cases include: node val is INT_MAX or INT_MIN,
+   then it will fail if we use upB=INT_MAX and lowB=INT_MIN 
+*/
+
+/*
+complexity comparison (#. total nodes: N)
+1. using                 Depth-First search vs. Breadth-First search
+   
+   memory complexity:       O(logN), stack  vs.  O(N), heap? 
+   
+   PS: N=1+2+...+2^k = 2^(k+1)-1, the max queue size = 2^k (last layer), 
+       so max queue size is in the same order of total number of nodes.
+         
+   time complexity:  
+   worst                           N        vs.        N
+   normal           both are top-down until found, but different ways of traversal
+
+2. in Depth-First search implementation
+   we still can order 2 things: 1. check this node; 2. check its children
+   methodA(2->1): this method always maximize the depth of the program stack first, 
+                  then start checking the data on the nodes
+   methodB(1->2): more precisely, this method will stop 2. if 1. fails, 
+                  this can save both the depth of the stack and the execution time.
+*/

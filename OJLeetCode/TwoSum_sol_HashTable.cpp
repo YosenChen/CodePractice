@@ -1,0 +1,167 @@
+using namespace std;
+
+// here we implement Hash table with separate chaining method
+template<typename Key_T, typename Val_T>
+class HashTable
+{
+public:
+    
+    struct ChainEle
+    {
+        Key_T key;
+        Val_T val;
+        ChainEle(Key_T k, Val_T v):key(k),val(v){}
+    };
+    
+    HashTable(size_t cap)
+    :mCap(cap)
+    {
+        mpData = new list<ChainEle>[cap];
+    }
+    ~HashTable()
+    {
+        delete [] mpData;
+    }
+
+/*
+Average	Worst case
+Space	O(n)	O(n)
+Search	O(1)	O(n)
+Insert	O(1)	O(n)
+Delete	O(1)	O(n)
+based on wikipedia's info, 
+if we are not lucky enough to get the data in O(1), 
+then you have to search the whole list to get the final result (for open addressing, linear probing)
+*/
+    // if found, modify val (output) and return true
+    // otherwise return false;
+    // complexity: constant in avg
+    bool search(Key_T key, Val_T& val)
+    {
+        size_t idx = hashfunc(key);
+        for (typename list<HashTable<Key_T, Val_T>::ChainEle>::iterator it=mpData[idx].begin(); it!=mpData[idx].end();it++)
+        {
+            // for list::end(), If the container is empty, this function returns the same as list::begin.
+            if (it->key == key) // hit
+            {
+                val = it->val;
+                return true;
+            }
+        }
+        // including empty
+        return false;
+    }
+    
+    // insert if not in the list, update if in the list
+    void insert(Key_T key, Val_T val)
+    {
+        size_t idx = hashfunc(key);
+        if (mpData[idx].empty())
+        {
+            ChainEle ele(key, val);
+            mpData[idx].push_back(ele);
+            return;
+        }
+        // not empty, search, then add or update
+        for (typename list<HashTable<Key_T, Val_T>::ChainEle>::iterator it=mpData[idx].begin(); it!=mpData[idx].end(); it++)
+        {
+            if (it->key == key) // match, update val
+            {
+                it->val = val;
+                return;
+            }
+        }
+        // no match, puch back
+        {
+            ChainEle ele(key, val);
+            mpData[idx].push_back(ele);
+            return;
+        }
+    }
+    bool remove(Key_T key)
+    {
+        size_t idx = hashfunc(key);
+        for (typename list<HashTable<Key_T, Val_T>::ChainEle>::iterator it=mpData[idx].begin(); it!=mpData[idx].end(); it++)
+        {
+            if (it->key == key) // match
+            {
+                mpData[idx].erase(it);
+                return true;
+            }
+        }
+        // including empty
+        return false;
+    }
+       
+    
+private:
+    
+    size_t hashfunc(Key_T key)
+    {
+        // http://www.cplusplus.com/reference/functional/hash/?kw=hash
+        // result_type	size_t	The type of the hash values produced.
+        // size_t is an unsigned integral type.
+        size_t idx;
+        #if 0 // hash function is only for C++11
+        hash<Key_T> keyhash;
+        idx = keyhash(key);
+        idx = idx%mCap;
+        #else
+        idx = (size_t)key; // size_t is unsigned int, nonnegative
+        idx = idx%mCap; // nonnegative % nonnegative is nonnegative (sign of % result is the same as idx)
+        #endif
+        
+        return idx;
+    }
+    
+    size_t mCap;
+    list<ChainEle> *mpData; // array of list
+    
+};
+
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+        // construct hash table first
+        HashTable<int, int> HT(nums.size());
+        res.clear();
+        for (int i=0; i<nums.size(); i++)
+        {
+            HT.insert(nums[i], i); // key nums[i], val i
+        }
+        
+        // You may assume that each input would have exactly one solution.
+        int idx;
+        for (int i=0; i<nums.size(); i++)
+        {
+            if (HT.search(target-nums[i], idx)) // found
+            {
+                if (idx == i) continue;
+                
+                // idx != i, then i < idx is guaranteed
+                // why? 
+                // if nums[idx] != nums[i], then no problem, i < idx is guaranteed
+                // if nums[idx] == nums[i], then HT will update the val to be the larger index, so i < idx, ok
+                res.push_back(i+1);
+                res.push_back(idx+1);
+                return res;
+            }
+        }
+        // not possible
+        return res;
+    }
+    
+    vector<int> res;
+};
+
+
+/*
+Submission Details
+16 / 16 test cases passed.
+Status: Accepted
+Runtime: 12 ms
+Submitted: 0 minutes ago
+Your runtime beats 86.03% of cpp submissions.
+*/
+
+

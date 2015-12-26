@@ -1,0 +1,16 @@
+#ifndef _HELP_TOOL_H_
+#define _HELP_TOOL_H_
+
+#define _WIN_OS_ 1
+#define _LINUX_OS_ 0
+#define _OS_ENV_ _WIN_OS_ //_WIN_OS_ or _LINUX_OS_
+
+// Linux
+// http://linux.die.net/man/3/clock_gettime
+// clock_gettime()
+
+
+
+
+
+#endif

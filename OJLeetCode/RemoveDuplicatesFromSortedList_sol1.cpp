@@ -1,0 +1,33 @@
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode *deleteDuplicates(ListNode *head) {
+        //1. complete iteration body/logic
+        //2. deal with final/init conditions
+        //3. deal with trivial cases, simple cases, then finally (if you have time), special/corner cases
+        ListNode *temp=NULL, *curr=head;
+        bool bNotEnd;
+        while (curr)
+        {
+            temp = curr;
+            while ((bNotEnd = curr->next) && curr->val == curr->next->val)
+            {
+                curr = curr->next;
+            }
+            //if (!bNotEnd) //do the same thing as below, makes tail
+            temp->next = curr->next;
+            curr = curr->next;
+        }
+        //if reach the end, outer while will break.
+        return head;
+    }
+};
+//Status: Accepted
+//164 / 164 test cases passed., Runtime: 88 ms

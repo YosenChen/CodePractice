@@ -1,0 +1,77 @@
+#include <cstdlib>
+#include <cstdio>
+
+#using namespace std;
+
+/* Function: FindMin
+ * -----------------
+ * find minimum of three numbers
+ */
+ int FindMin(int a, int b, int c) {
+     int min = a;
+     if (b < min) min = b;
+     if (c < min) min = c;
+     return min;
+ }
+
+/* Function: FindEditDistance
+ * --------------------------
+ * This function returns the edit distance between the two strings.
+ * Inputs two strings, and the max limit for edit distance. 
+ * When the limit is reduced down passed 0, return the current edit
+ * distance immediately, since the exact edit distance is of no interest 
+ * at that point. 
+ * limit: Maximum number of edit distance before returning 
+ *        (if more than limit, it will return edit distance over limit)
+ */
+
+int FindEditDistance(char *str1, char *str2, int limit)
+{
+    // Base Case 1: When either strings is at the null characters
+    if (str1[0] == '\0' || str2[0] == '\0') {
+        return strlen(str1) + strlen(str2);
+    }
+    // Base Case 2: Optimize recursive function but shortcircuiting
+    if (limit < 0) {
+        return 0;
+    }
+
+    // When first character has a match, return the edit distance from the shorten string
+    if (str1[0] == str2[0]) {
+        return FindEditDistance(str1 + 1, str2 + 1, limit);
+    }
+    // When first character has no match, find the smallest edit distance of
+    // 3 cases: 1) replace 2) add 3) delete
+    int d_rep = FindEditDistance((str1 + 1), (str2 + 1), limit - 1);
+    int d_add = FindEditDistance(str1, (str2 + 1), limit - 1);
+    int d_del = FindEditDistance((str1 + 1), str2, limit - 1);
+    int min = FindMin(d_rep, d_add, d_del);
+    return min+1;
+}
+
+void test(char key[20], char misspelled[20], int limit)
+{
+    printf("dist(%s, %s)=%d\n", key, misspelled, FindEditDistance(key, misspelled, limit));
+}
+
+
+size_t main()
+{
+    test("egg", "eabgg", 10);
+    test("egg", "eab", 10);
+    test("eggab", "eab", 10);
+    test("egg", "egg", 10);
+    
+    
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+

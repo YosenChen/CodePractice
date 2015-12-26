@@ -1,0 +1,16 @@
+hash table implementation
+
+hash function is provided in C++ 11
+http://www.cplusplus.com/reference/functional/hash/?kw=hash
+
+http://docs.oracle.com/javase/7/docs/api/java/util/HashMap.html
+
+try to use hash in most questions
+1. two sum
+2. LRU cache
+3. use hashmap instead of map
+
+
+
+
+

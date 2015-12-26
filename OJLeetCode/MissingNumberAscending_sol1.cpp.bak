@@ -1,0 +1,63 @@
+class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+        // you should find the relationship: it goes like nums[0]=0, nums[1]=1, nums[2]=2, ... 
+        // (or even offset version!! it will be harder to find out!!)
+        
+        // basic idea: iterate until we find nums[i]!=i, complexity: O(N)
+        // actually, we can use binary search to find the first mismatch idx, complexity: O(logN)
+        // it brings out a question: when can we use binary search?
+        // the answer is: 
+        // for any arrray of data, there's only 1 change in the middle and it stays changed til the end
+        // for example, 0, 0, ..., 0, 1, 1, ..., 1
+        // or more general, start from the point in the middle, 
+        // if you can tell which part you should go, then you can use it
+        // for example, find a number in a sorted array
+        
+        // check cases: {0}->1, {1}->0, {1, 2}->0, {0, 1}->2
+        if (nums[0]!=0) return 0;
+        if (nums[nums.size()-1] == (nums.size()-1)) return nums.size(); // all matched then n is the missing number
+        
+        // now, nums[0]==0, and nums[n-1]!=n-1
+        int idx1 = 0;
+        int idx2 = nums.size()-1;
+        int mid;
+        
+        while(1)
+        {
+            // finally, it will reach idx1+1 == idx2, this is only if we only update 1 idx for each iteration
+            if (idx1+1==idx2 && nums[idx1]==idx1 && nums[idx2]!=idx2) return idx2;
+            
+            mid = (idx1+idx2)/2;
+            
+            if(nums[mid]!=mid)
+            {
+                idx2 = mid;
+                // for simplicity, don't change idx1 at the same time
+            }
+            else
+            {
+                idx1 = mid;
+            }
+        }
+        
+        //impossible, it's guaranteed to have a solution
+        return 0;
+    }
+};
+
+
+/*
+inspired by the OJ LeetCode problem: Missing Number
+the problem is the same but added one sentence: the given array is guaranteed in increasing (ascending) order
+original problem statement:
+Given an array containing n distinct numbers taken from 0, 1, 2, ..., n, 
+find the one that is missing from the array.
+
+[0,1,2, 3, 4, 6,7] -> 5, correct
+[0,1,2, 3, 4, 5, 6,7] -> 8, correct
+[0] -> 1, correct
+[1] -> 0, correct
+[0,1] -> 2, correct
+[1,2] -> 0, correct
+*/

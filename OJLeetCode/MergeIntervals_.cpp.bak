@@ -1,0 +1,310 @@
+#include <iostream>
+#include <cstdlib>
+#include <cstdio>
+#include <vector>
+#include <list>
+#include <cmath>
+using namespace std;
+#if 0
+/**
+ * Definition for an interval.
+ */
+struct Interval {
+    int start;
+    int end;
+    //Interval() : start(0), end(0) {}
+    //Interval(int s, int e) : start(s), end(e) {}
+};
+
+
+#define LOG_EN 1
+
+void printIt(vector<Interval>::iterator it, vector<Interval>& in)
+{
+    if(it==in.end())
+        printf("[%s] it(%p) reach the end\n", __FUNCTION__, it);
+    else
+        printf("[%s] it(%p) = (%d, %d)\n", __FUNCTION__, it, it->start, it->end);
+}
+
+class Solution {
+public:
+    vector<Interval> merge(vector<Interval>& intervals) {
+        bool bStable = false;
+        
+        while(!bStable)
+        {
+            bStable = true;
+            for(vector<Interval>::iterator it1=intervals.begin(); it1!=intervals.end(); it1++)
+            {
+                if (LOG_EN) printIt(it1, intervals);
+                if (LOG_EN) printf("[%s] (%p: %d,%d)\n", __FUNCTION__, it1, (*it1).start, (*it1).end);
+                for(vector<Interval>::iterator it2=it1+1; it2!=intervals.end(); /*it2++ might not be executable*/)
+                {
+                    if (LOG_EN) printIt(it2, intervals);
+
+                    if (isIntersected(*it1, *it2))
+                    {
+                        if (LOG_EN)
+                        {
+                            printIt(it1, intervals);
+                            printIt(it2, intervals);
+                        }
+                        bStable = false;
+                        vector<Interval>::iterator it3 = it2+1;
+                        if (LOG_EN) printIt(it3, intervals);
+                        mergeInto1st(it1, it2, intervals); //it2 is erased
+                        it2 = it3; //it2++
+                    }
+                    else
+                        it2++;
+                    //do it2++ here
+                }
+            }
+        }
+        //now all intervals are merged
+        return intervals;
+    }
+    bool isIntersected(Interval& a, Interval& b) // need to merge
+    {
+        return !((a.start > b.end) || (b.start > a.end));
+        //or you can check if max(start) < min(end)
+    }
+    void mergeInto1st(vector<Interval>::iterator it1, vector<Interval>::iterator it2, vector<Interval>& in)
+    {
+        //merge into it1, erase it2
+        it1->start = (it1->start < it2->start) ? it1->start : it2->start;
+        it1->end = (it1->end > it2->end) ? it1->end : it2->end;
+        
+        in.erase(it2);
+    }
+};
+
+void printResult(vector<Interval> &in)
+{
+    int sz = in.size();
+    for(int i=0; i<sz; i++)
+    {
+        printf("[%s] (%d: %d,%d)\n", __FUNCTION__, i, in[i].start, in[i].end);
+    }
+}
+
+int main()
+{
+    vector<int> test;
+    test.push_back(100);
+    vector<int>::iterator it = test.begin();
+    printf("[%s] it(%p), val(%d)\n", __FUNCTION__, it, *it);
+
+    std::vector<Interval> testIn;
+    Interval a, b, c;
+    a.start = 1;
+    a.end = 3;
+
+    testIn.push_back(a);
+    Interval e(a);
+    printf("e:(%d, %d)\n", e.start, e.end);
+    std::vector<Interval>::iterator itt = testIn.begin();
+    printf("[%s] sz(%d), it(%p), val(%d,%d), val(%d,%d)\n", __FUNCTION__, testIn.size(), itt, itt->start, itt->end, testIn.front().start, testIn.front().end);
+    printf("[%s] sz(%d), it(%p), val(%d,%d), val(%d,%d)\n", __FUNCTION__, testIn.size(), itt, (*itt).start, (*itt).end, testIn.front().start, testIn.front().end);
+/*
+    testIn.push_back(b);
+    testIn.push_back(c);
+    Solution sln;
+    sln.merge(testIn);
+    printResult(testIn);
+*/
+    getchar();
+    
+    return 0;
+}
+
+#endif
+
+class Solution {
+public:
+    struct Pair
+    {
+        int num;
+        int occ;
+        Pair(int n, int o)
+            : num(n)
+            , occ(o)
+        {}
+        Pair(){}
+    };
+    int climbStairs(int n) {
+        if (!n) return 0;
+        if (n==1) return 1;
+        
+        int sum = 0;
+        int max_num_of_2 = n/2;
+        int num_of_1;
+        for (int num_of_2=0; num_of_2<=max_num_of_2; num_of_2++)
+        {
+            num_of_1 = n-2*num_of_2;
+            int temp;
+            sum += (temp = combination_of_1_and_2(num_of_1, num_of_2));
+            printf("[%s] sum = %d, comb = %d, ones = %d, twos = %d\n", __FUNCTION__, sum, temp, num_of_1, num_of_2);
+        }
+        return sum;
+        
+    }
+    int combination_of_1_and_2(int ones, int twos)
+    {
+        int max = (ones >= twos) ? ones : twos;
+        int min = (ones < twos) ? ones : twos;
+        
+        //return factorial(ones+twos, max)/factorial(min); //overflow <-- we need a better way to implement it
+        addNumerator(ones+twos, max);
+        removeDenominator(min);
+        return productOfList();
+    }
+#if 0
+    long long int factorial(int k)
+    {
+        //iterative is better than recursive, for code optimization
+        long long int ret = 1;
+        for (int i=2; i<=k; i++)
+            ret*=i;
+        return ret;   
+    }
+    long long int factorial(int k, int max_div)
+    {
+        long long int ret = 1;
+        for (int i=max_div+1; i<=k; i++)
+            ret*=i;
+        return ret;        
+    }
+#endif
+    void addNumerator(int k, int max_div)
+    {
+        for (int i=max_div+1; i<=k; i++)
+        {
+            addNum(i);
+        }
+    }
+    void removeDenominator(int k)
+    {
+        for (int i=2; i<=k; i++)
+            remNum(i);
+    }
+    int productOfList()
+    {
+        printf("[%s] +\n", __FUNCTION__);
+        int ret = 1;
+        for (list<Pair>::iterator it=L.begin(); it!=L.end(); it++)
+        {
+            printf("(it->num, it->occ) = (%d, %d)\n", it->num, it->occ);
+            for (int i=0; i<it->occ; i++)
+            {
+                ret*= (it->num);
+            }
+        }
+        L.clear();
+        printf("[%s] -\n", __FUNCTION__);
+        return ret;
+    }
+    void addNum(int i)
+    {
+        if (i==1) return;
+        
+        bool bIsPrime = true;
+        for (int j=2; j<=(int)sqrt((float)i); j++) //better way: only sweep with prime numbers
+        {
+            if (!(i%j))
+            {
+                //j is a factor of i
+                bIsPrime = false;
+                addEle(j);
+                addNum(i/j);
+                break;
+            }
+        }
+        if (bIsPrime == true) //create new Pair for i
+        {
+            addEle(i);
+        }
+    }
+    void remNum(int i)
+    {
+        if (i==1) return;
+        
+        bool bIsPrime = true;
+        for (int j=2; j<=(int)sqrt((float)i); j++) //better way: only sweep with prime numbers
+        {
+            if (!(i%j))
+            {
+                //j is a factor of i
+                bIsPrime = false;
+                remEle(j);
+                remNum(i/j);
+                break;
+            }
+        }
+        if (bIsPrime == true) //create new Pair for i
+        {
+            remEle(i);
+        }
+    }
+    void addEle(int ele)
+    {
+                bool bNumInList = false;
+                for (list<Pair>::iterator it=L.begin(); it!=L.end(); it++)
+                {
+                    printf("[%s] pair(%d,%d)\n", __FUNCTION__, it->num, it->occ);
+                    if (it->num == ele)
+                    {
+                        printf("[%s] pair(%d,%d), ele(%d), (%d)\n", __FUNCTION__, (it->num), (it->occ), ele, (it->num == ele));
+                        cout << "num: " << it->num << ", occ: " << it->occ << endl;
+                        it->occ++;
+                        bNumInList = true;
+                        break;
+                    }
+                    
+                }
+                if (bNumInList == false) //create new Pair for ele
+                {
+                    Pair p(ele, 1);
+                    L.push_back(p);
+                }       
+    }
+    void remEle(int ele)
+    {
+                bool bNumInList = false;
+                for (list<Pair>::iterator it=L.begin(); it!=L.end(); it++)
+                {
+                    if (it->num == ele)
+                    {
+                        it->occ--;
+                        bNumInList = true;
+                        break;
+                    }
+                    
+                }
+                if (bNumInList == false)
+                {
+                    //impossible
+                    return;
+                }        
+    }
+    list<Pair> L;
+};
+
+int main(void)
+{
+    Solution sln;
+    printf("sln.climbStairs(4) = %d\n", sln.climbStairs(4));
+    printf("sln.climbStairs(5) = %d\n", sln.climbStairs(5));
+
+    list<Solution::Pair> ll;
+    Solution::Pair p;
+    p.num = 3; p.occ = 6;
+    ll.push_back(p);
+    list<Solution::Pair>::iterator it=ll.begin();
+    printf("print it(%d), pair(%d,%d)\n", it, it->num, it->occ);
+    printf("don't print it(%p), pair(%d,%d) then everything is back to normal\n", 0, it->num, it->occ);
+
+    getchar();
+    return 0;
+}

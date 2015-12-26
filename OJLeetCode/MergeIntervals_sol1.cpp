@@ -1,0 +1,64 @@
+/**
+ * Definition for an interval.
+ * struct Interval {
+ *     int start;
+ *     int end;
+ *     Interval() : start(0), end(0) {}
+ *     Interval(int s, int e) : start(s), end(e) {}
+ * };
+ */
+class Solution {
+public:
+    vector<Interval> merge(vector<Interval>& intervals) {
+        bool bStable = false;
+        
+        while(!bStable)
+        {
+            bStable = true;
+            for(vector<Interval>::iterator it1=intervals.begin(); it1!=intervals.end(); it1++)
+            {
+                for(vector<Interval>::iterator it2=it1+1; it2!=intervals.end(); /*it2++ might not be executable*/)
+                {
+                    if (isIntersected(*it1, *it2))
+                    {
+                        bStable = false;
+                        vector<Interval>::iterator it3 = it2+1;
+                        bool toBreak = (it3 == intervals.end());
+                        mergeInto1st(it1, it2, intervals); //it2 is erased
+                        it2 = it3; //it2++
+                        if (toBreak) break;
+                    }
+                    else
+                        it2++;
+                    //do it2++ here
+                }
+            }
+        }
+        //now all intervals are merged
+        return intervals;
+    }
+    bool isIntersected(Interval& a, Interval& b) // need to merge
+    {
+        return !((a.start > b.end) || (b.start > a.end));
+        //or you can check if max(start) < min(end)
+    }
+    void mergeInto1st(vector<Interval>::iterator it1, vector<Interval>::iterator it2, vector<Interval>& in)
+    {
+        //merge into it1, erase it2
+        it1->start = (it1->start < it2->start) ? it1->start : it2->start;
+        it1->end = (it1->end > it2->end) ? it1->end : it2->end;
+        
+        in.erase(it2);
+    }
+};
+
+
+/*
+Submission Details
+168 / 168 test cases passed.
+Status: Accepted
+Runtime: 744 ms
+Submitted: 0 minutes ago
+Your runtime beats 0.22% of cpp submissions.
+*/
+
